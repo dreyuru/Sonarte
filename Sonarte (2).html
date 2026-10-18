@@ -1,0 +1,910 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Sonarte</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/*
+  Layout concept: a dark glass listening room. A floating pill nav, a navy hero panel with vertical
+  stripes and a ghost wordmark, a cluster of frosted cards, then a wall of glass plates.
+  A blurred orb behind everything takes its color from the piece you are reading.
+  Tokens are named by role so they map one-to-one to Figma variables.
+*/
+@property --orb-a { syntax: "<color>"; inherits: true; initial-value: rgba(30, 59, 255, 0.7); }
+@property --orb-b { syntax: "<color>"; inherits: true; initial-value: rgba(25, 167, 255, 0.5); }
+
+:root {
+  /* color (dark first) */
+  --color-bg: #04050B;
+  --color-ink: #F4F6FF;
+  --color-ink-soft: #9AA3C7;
+  --color-line: rgba(255, 255, 255, 0.14);
+  --color-accent: #6272FF;
+  --color-accent-ink: #FFFFFF;
+  --color-cyan: #55C8FF;
+  --color-danger: #FF8A80;
+  --glass-bg: rgba(20, 23, 40, 0.55);
+  --glass-edge: rgba(255, 255, 255, 0.15);
+  --glass-hi: rgba(255, 255, 255, 0.14);
+  --glass-shadow: rgba(0, 0, 0, 0.6);
+  --btn-bg: #FFFFFF;
+  --btn-ink: #07091A;
+  --hero-bg-1: #050843;
+  --hero-bg-2: #0A0F78;
+  --hero-stripe: rgba(96, 112, 255, 0.34);
+  --orb-a: rgba(30, 59, 255, 0.7);
+  --orb-b: rgba(25, 167, 255, 0.5);
+  /* type */
+  --font-display: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --text-xs: 0.72rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.3rem;
+  --text-xl: clamp(2.2rem, 6vw, 4.2rem);
+  /* space + shape */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 40px;
+  --space-7: 72px;
+  --radius-card: 28px;
+  --radius-inner: 18px;
+  --radius-control: 14px;
+  --radius-pill: 999px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --color-bg: #E4E8F7;
+    --color-ink: #0C0E2B;
+    --color-ink-soft: #565C82;
+    --color-line: rgba(12, 14, 43, 0.14);
+    --color-accent: #3D4CF0;
+    --color-cyan: #0A74BD;
+    --color-danger: #B3261E;
+    --glass-bg: rgba(255, 255, 255, 0.74);
+    --glass-edge: rgba(255, 255, 255, 0.95);
+    --glass-hi: rgba(255, 255, 255, 1);
+    --glass-shadow: rgba(40, 50, 120, 0.28);
+    --btn-bg: #0C0E2B;
+    --btn-ink: #FFFFFF;
+    --orb-a: rgba(110, 130, 255, 0.55);
+    --orb-b: rgba(90, 190, 255, 0.45);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --color-bg: #E4E8F7;
+  --color-ink: #0C0E2B;
+  --color-ink-soft: #565C82;
+  --color-line: rgba(12, 14, 43, 0.14);
+  --color-accent: #3D4CF0;
+  --color-cyan: #0A74BD;
+  --color-danger: #B3261E;
+  --glass-bg: rgba(255, 255, 255, 0.74);
+  --glass-edge: rgba(255, 255, 255, 0.95);
+  --glass-hi: rgba(255, 255, 255, 1);
+  --glass-shadow: rgba(40, 50, 120, 0.28);
+  --btn-bg: #0C0E2B;
+  --btn-ink: #FFFFFF;
+  --orb-a: rgba(110, 130, 255, 0.55);
+  --orb-b: rgba(90, 190, 255, 0.45);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 var(--space-7);
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--color-bg);
+  z-index: 10;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--color-cyan); }
+:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 3px; }
+.wrap { max-width: 1180px; margin-inline: auto; }
+.bar, main { position: relative; z-index: 1; }
+
+/* orb */
+.orb { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; transition: --orb-a 1.4s ease, --orb-b 1.4s ease; }
+.orb::before {
+  content: ""; position: absolute; left: 50%; top: -18%; width: min(110vw, 1000px); aspect-ratio: 1;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, var(--orb-a), transparent 72%);
+  filter: blur(24px);
+  animation: drift 26s ease-in-out infinite alternate;
+}
+.orb::after {
+  content: ""; position: absolute; left: -10%; top: 38%; width: 120vw; max-width: 1300px; height: 46vh; min-height: 280px;
+  background: radial-gradient(closest-side, var(--orb-b), transparent 70%);
+  filter: blur(40px); transform: rotate(-22deg);
+  animation: drift2 32s ease-in-out infinite alternate;
+}
+@keyframes drift { from { transform: translateX(-52%) translateY(0); } to { transform: translateX(-46%) translateY(40px); } }
+@keyframes drift2 { from { transform: rotate(-22deg) translateX(0); } to { transform: rotate(-18deg) translateX(8%); } }
+@media (prefers-reduced-motion: reduce) { .orb::before, .orb::after { animation: none; } }
+
+/* glass */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  backdrop-filter: blur(22px) saturate(1.35);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 28px 60px -34px var(--glass-shadow);
+}
+.glass--lit {
+  border-color: color-mix(in srgb, var(--color-cyan) 60%, transparent);
+  box-shadow: inset 0 0 44px color-mix(in srgb, var(--color-cyan) 14%, transparent), 0 0 46px -10px color-mix(in srgb, var(--color-cyan) 55%, transparent);
+}
+
+/* bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: linear-gradient(var(--color-bg) 60%, transparent); }
+.bar__row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--space-3); padding-block: var(--space-3) var(--space-4); }
+.mark { display: flex; align-items: center; gap: var(--space-2); font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; }
+.mark svg { width: 34px; height: 24px; }
+.mark rect { fill: var(--color-ink); }
+.navpill { display: flex; align-items: center; gap: var(--space-1); padding: 5px; border-radius: var(--radius-pill); flex-wrap: wrap; justify-content: center; }
+.tab {
+  background: none; border: 0; padding: 8px 16px; border-radius: var(--radius-pill); cursor: pointer;
+  font-size: var(--text-sm); font-weight: 600; color: var(--color-ink-soft);
+}
+.tab[aria-current="page"] { color: var(--color-ink); background: color-mix(in srgb, var(--color-ink) 10%, transparent); }
+.icon-btn {
+  background: none; border: 0; border-radius: var(--radius-pill); width: 36px; height: 36px; cursor: pointer;
+  display: grid; place-items: center; color: var(--color-ink-soft);
+}
+.icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+
+/* buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-2); justify-content: center; white-space: nowrap;
+  background: var(--btn-bg); color: var(--btn-ink); border: 1px solid transparent;
+  border-radius: var(--radius-pill); padding: 12px 22px; cursor: pointer; font-weight: 700;
+}
+.btn--sm { padding: 8px 18px; font-size: var(--text-sm); }
+.btn--accent { background: var(--color-accent); color: var(--color-accent-ink); box-shadow: 0 10px 30px -10px var(--color-accent); }
+.btn--ghost { background: transparent; color: var(--color-ink); border-color: var(--color-line); }
+.btn--danger { background: transparent; color: var(--color-danger); border-color: var(--color-danger); }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.back { background: none; border: 0; cursor: pointer; padding: var(--space-3) 0 var(--space-4); color: var(--color-ink-soft); font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; }
+.pill {
+  display: inline-flex; align-items: center; padding: 3px 12px; border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-edge); font-size: var(--text-xs); font-weight: 600; color: var(--color-ink-soft); white-space: nowrap;
+}
+.pill--mood { color: var(--color-cyan); border-color: color-mix(in srgb, var(--color-cyan) 45%, transparent); }
+.pill--hero { color: #CFD6FF; background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.22); }
+
+/* hero panel */
+.hero-panel {
+  position: relative; overflow: hidden; isolation: isolate;
+  border-radius: 36px; margin-top: var(--space-2);
+  background: linear-gradient(180deg, var(--hero-bg-1), var(--hero-bg-2) 70%, #070A52);
+  border: 1px solid rgba(140, 160, 255, 0.28);
+  padding: clamp(28px, 5vw, 56px) clamp(18px, 4vw, 48px) clamp(28px, 4vw, 44px);
+  color: #F4F6FF;
+}
+.hero-panel::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: repeating-linear-gradient(90deg, var(--hero-stripe) 0 34px, rgba(10, 15, 120, 0) 34px 68px);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,0.55) 60%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,0.55) 60%, transparent 100%);
+}
+.ghost {
+  position: absolute; left: 50%; top: -4%; transform: translateX(-50%); z-index: -1; pointer-events: none; user-select: none;
+  font-weight: 800; letter-spacing: -0.06em; line-height: 0.9; white-space: nowrap;
+  font-size: clamp(5rem, 26vw, 19rem);
+  background: linear-gradient(180deg, rgba(160, 190, 255, 0.42), rgba(80, 110, 255, 0.04) 85%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero-copy { display: grid; justify-items: center; text-align: center; gap: var(--space-4); max-width: 44rem; margin-inline: auto; padding-top: clamp(20px, 5vw, 56px); }
+.hero-copy h1 { font-size: var(--text-xl); font-weight: 800; letter-spacing: -0.035em; line-height: 1.04; margin: 0; text-wrap: balance; }
+.hero-copy p { margin: 0; color: #B6BFEA; max-width: 34rem; }
+.cta { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; padding-top: var(--space-2); }
+.btn-hero { background: #FFFFFF; color: #07091A; }
+.btn-hero--ghost { background: rgba(255, 255, 255, 0.08); color: #F4F6FF; border-color: rgba(255, 255, 255, 0.28); }
+.tag { position: absolute; z-index: 1; font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 18px; border-radius: var(--radius-pill); color: #DDE3FF; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.25); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.tag--a { left: 3%; top: 30%; transform: rotate(-9deg); }
+.tag--b { right: 3%; top: 22%; transform: rotate(8deg); }
+
+/* cluster */
+.cluster { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: var(--space-4); align-items: end; margin-top: clamp(28px, 5vw, 48px); }
+.mini { border-radius: var(--radius-card); padding: var(--space-4); display: grid; gap: var(--space-2); align-content: start; min-width: 0; color: #F4F6FF; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.22); }
+.mini__k { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: #AEB8EE; }
+.mini__big { font-size: clamp(2.6rem, 6vw, 4rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+.mini__sub { color: #B6BFEA; font-size: var(--text-sm); }
+.mini--l { transform: rotate(-2deg); }
+.mini--r { transform: rotate(2deg); }
+.mini .chips { gap: 6px; }
+.mini .chip { color: #DDE3FF; border-color: rgba(255,255,255,0.28); }
+.mini .chip:hover { background: rgba(255,255,255,0.14); }
+.feature { display: grid; gap: var(--space-3); padding: 12px 12px var(--space-4); border-radius: var(--radius-card); text-align: left; cursor: pointer; min-width: 0; color: #F4F6FF; background: rgba(8, 12, 80, 0.55); }
+.feature .plate { aspect-ratio: 16 / 10; }
+.feature__body { display: grid; gap: 4px; padding-inline: 6px; }
+.feature__title { font-size: var(--text-lg); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+.feature__by { color: #B6BFEA; font-size: var(--text-sm); }
+.feature__go { display: inline-flex; align-items: center; gap: 8px; margin-top: var(--space-2); font-weight: 700; font-size: var(--text-sm); color: #fff; }
+.feature__go span { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: #07091A; }
+
+/* toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding-block: var(--space-6) var(--space-5); }
+.search { flex: 1 1 240px; min-width: 0; max-width: 340px; border-radius: var(--radius-pill); padding: 11px 20px; outline-offset: 2px; }
+.search::placeholder { color: var(--color-ink-soft); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); min-width: 0; }
+.chip {
+  background: none; border: 1px solid var(--color-line); border-radius: var(--radius-pill);
+  padding: 5px 14px; cursor: pointer; font-size: var(--text-sm); font-weight: 600; color: var(--color-ink-soft);
+}
+.chip[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-ink); border-color: var(--btn-bg); }
+.switch { display: inline-flex; align-items: center; gap: var(--space-3); background: none; border: 0; padding: 0; cursor: pointer; color: var(--color-ink-soft); font-size: var(--text-sm); font-weight: 600; }
+.switch__track { width: 46px; height: 26px; border-radius: var(--radius-pill); background: var(--color-line); position: relative; transition: background 0.2s; }
+.switch__track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--btn-bg); transition: transform 0.2s; }
+.switch[aria-checked="true"] .switch__track { background: var(--color-accent); }
+.switch[aria-checked="true"] .switch__track::after { transform: translateX(20px); background: #fff; }
+@media (prefers-reduced-motion: reduce) { .switch__track, .switch__track::after { transition: none; } }
+.count { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-ink-soft); letter-spacing: 0.06em; margin-left: auto; }
+
+/* plates */
+.plate { position: relative; display: flex; aspect-ratio: 4 / 5; max-width: 100%; border-radius: var(--radius-inner); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
+.plate::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(255,255,255,0.2), transparent 38%, rgba(0,0,0,0.28)); }
+.plate__band { flex: var(--w, 1) 1 0; background: var(--c); transform-origin: bottom; }
+.is-playing .plate__band { animation: breathe var(--beat, 1.4s) ease-in-out infinite alternate; animation-delay: calc(var(--i) * 0.17s); }
+@keyframes breathe { from { transform: scaleY(1); } to { transform: scaleY(0.9); } }
+@media (prefers-reduced-motion: reduce) { .is-playing .plate__band { animation: none; } }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: var(--space-4); }
+.card {
+  position: relative; display: grid; gap: var(--space-3); text-align: left; padding: 12px 12px var(--space-4); border-radius: var(--radius-card);
+  cursor: pointer; min-width: 0; color: var(--color-ink); transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.card:hover, .card:focus-visible {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--glow, var(--color-cyan)) 70%, transparent);
+  box-shadow: inset 0 0 40px color-mix(in srgb, var(--glow, var(--color-cyan)) 16%, transparent), 0 0 44px -12px var(--glow, var(--color-cyan));
+}
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover, .card:focus-visible { transform: none; } }
+.card__body { display: grid; gap: 4px; padding-inline: 8px; padding-right: 52px; }
+.card__title { font-size: var(--text-lg); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+.card__by { color: var(--color-ink-soft); font-size: var(--text-sm); }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--space-2); }
+.card__go { position: absolute; right: 18px; bottom: 18px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--btn-bg); color: var(--btn-ink); font-weight: 800; }
+
+/* empty + notices */
+.empty { border-radius: var(--radius-card); padding: var(--space-6) var(--space-5); display: grid; gap: var(--space-2); max-width: 36rem; }
+.empty h2 { font-weight: 800; letter-spacing: -0.02em; margin: 0; font-size: var(--text-lg); }
+.empty p { margin: 0; color: var(--color-ink-soft); }
+.hint { color: var(--color-ink-soft); font-size: var(--text-sm); margin: 0; }
+
+/* piece */
+.piece { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-6); align-items: start; }
+.piece__plate { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 84px); padding: 14px; border-radius: 36px; background: var(--glass-bg); -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi), 0 0 70px -20px var(--orb-a); }
+.plate-note { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-ink-soft); margin: var(--space-3) 6px 0; letter-spacing: 0.04em; }
+.eyebrow { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-cyan); }
+.piece h1 { font-weight: 800; font-size: var(--text-xl); letter-spacing: -0.035em; line-height: 1.04; margin: var(--space-2) 0 var(--space-2); text-wrap: balance; }
+.piece__by { font-size: var(--text-lg); font-weight: 600; color: var(--color-ink-soft); margin: 0 0 var(--space-5); }
+.catalog { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: var(--space-3); margin: 0 0 var(--space-5); }
+.fact { display: grid; gap: 2px; align-content: start; padding: var(--space-3) var(--space-4); border-radius: var(--radius-inner); min-width: 0; background: var(--glass-bg); border: 1px solid var(--glass-edge); }
+.fact__k { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-soft); }
+.fact__v { font-weight: 600; font-size: var(--text-sm); overflow-wrap: anywhere; }
+
+.player { border-radius: var(--radius-card); padding: var(--space-4) var(--space-5) var(--space-5); display: grid; gap: var(--space-3); margin-bottom: var(--space-5); border: 1px solid color-mix(in srgb, var(--color-cyan) 50%, transparent); background: var(--glass-bg); -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); box-shadow: inset 0 0 44px color-mix(in srgb, var(--color-cyan) 10%, transparent), 0 0 46px -14px color-mix(in srgb, var(--color-cyan) 50%, transparent); }
+.player__top { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); align-items: center; }
+.player__what { min-width: 0; display: grid; gap: 2px; flex: 1 1 160px; }
+.player__mood { font-weight: 800; font-size: var(--text-lg); letter-spacing: -0.02em; line-height: 1.2; }
+.player__spec { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-ink-soft); letter-spacing: 0.04em; }
+.scope { width: 100%; height: 64px; display: block; background: color-mix(in srgb, var(--color-bg) 55%, transparent); border-radius: var(--radius-inner); }
+.vol { display: flex; align-items: center; gap: var(--space-3); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-ink-soft); letter-spacing: 0.08em; text-transform: uppercase; }
+.vol input { flex: 1; min-width: 0; accent-color: var(--color-accent); }
+
+.essay { max-width: 38rem; }
+.essay p { margin: 0 0 var(--space-4); font-size: 1.075rem; line-height: 1.75; color: color-mix(in srgb, var(--color-ink) 90%, transparent); }
+.pairs { max-width: 38rem; padding: var(--space-4) var(--space-5); margin-top: var(--space-5); display: grid; gap: var(--space-1); border-radius: var(--radius-card); background: var(--glass-bg); border: 1px solid var(--glass-edge); }
+.pairs__label { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-cyan); }
+.pairs__work { font-weight: 800; font-size: var(--text-lg); letter-spacing: -0.02em; }
+.more { margin-top: var(--space-5); display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; font-size: var(--text-sm); color: var(--color-ink-soft); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
+
+/* artists */
+.page-head { display: grid; gap: var(--space-2); padding-block: var(--space-6) var(--space-2); }
+.page-head h1 { font-weight: 800; font-size: var(--text-xl); letter-spacing: -0.035em; line-height: 1.04; margin: 0; }
+.artists { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: var(--space-4); padding-top: var(--space-5); }
+.artist { border-radius: var(--radius-card); padding: var(--space-5); display: grid; gap: var(--space-2); align-content: start; min-width: 0; }
+.artist h2 { font-weight: 800; font-size: var(--text-lg); letter-spacing: -0.02em; margin: 0; }
+.artist__life { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-cyan); letter-spacing: 0.04em; }
+.artist p { margin: 0; font-size: var(--text-sm); color: var(--color-ink-soft); }
+.artist__works { display: flex; flex-wrap: wrap; gap: var(--space-2); padding-top: var(--space-2); }
+
+/* form */
+.form { display: grid; gap: var(--space-4); max-width: 44rem; padding-top: var(--space-3); }
+.form h1 { font-weight: 800; font-size: var(--text-xl); letter-spacing: -0.035em; margin: var(--space-3) 0 0; }
+.row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.field { display: grid; gap: var(--space-2); min-width: 0; }
+.field label, .field legend { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-soft); }
+.field input[type="text"], .field select, .field textarea {
+  background: var(--glass-bg); border: 1px solid var(--glass-edge); border-radius: var(--radius-control); padding: 12px var(--space-4); width: 100%; min-width: 0;
+}
+.field textarea { min-height: 200px; resize: vertical; }
+.field small { color: var(--color-ink-soft); font-size: var(--text-xs); }
+.swatches { display: flex; flex-wrap: wrap; gap: var(--space-2); border: 0; padding: 0; margin: 0; }
+.swatches input { width: 52px; height: 52px; border: 1px solid var(--glass-edge); border-radius: var(--radius-control); background: none; padding: 3px; cursor: pointer; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); background: var(--btn-bg); color: var(--btn-ink); padding: 11px 20px; border-radius: var(--radius-pill); font-size: var(--text-sm); font-weight: 700; z-index: 20; }
+.foot { margin-top: var(--space-7); padding-top: var(--space-4); border-top: 1px solid var(--color-line); color: var(--color-ink-soft); font-size: var(--text-xs); font-family: var(--font-mono); letter-spacing: 0.03em; max-width: 46rem; }
+
+@media (max-width: 860px) {
+  .bar__row { grid-template-columns: 1fr; justify-items: start; }
+  .navpill { justify-content: flex-start; width: 100%; }
+  .cluster { grid-template-columns: minmax(0, 1fr); }
+  .mini--l, .mini--r { transform: none; }
+  .tag { display: none; }
+  .piece { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+  .piece__plate { position: static; max-width: 360px; }
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .count { margin-left: 0; }
+}
+.artist, .empty { background: var(--glass-bg); border: 1px solid var(--glass-edge); -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px); }
+</style>
+
+<div class="orb" aria-hidden="true"></div>
+
+<header class="bar">
+  <div class="wrap bar__row">
+    <div class="mark" aria-label="Sonarte">
+      <svg viewBox="0 0 34 24" aria-hidden="true"><rect x="1" y="8" width="3.500" height="8" rx="1.750"/><rect x="7" y="3" width="3.500" height="18" rx="1.750"/><rect x="13" y="9.500" width="3.500" height="5" rx="1.750"/><rect x="19" y="1" width="3.500" height="22" rx="1.750"/><rect x="25" y="7" width="3.500" height="10" rx="1.750"/></svg>
+      Sonarte
+    </div>
+    <nav class="navpill glass" aria-label="Sections">
+      <button class="tab" data-view="gallery" aria-current="page" type="button">Gallery</button>
+      <button class="tab" data-view="artists" type="button">Artists</button>
+      <button class="tab" data-view="edit" id="tab-add" type="button" hidden>Add piece</button>
+      <button class="icon-btn" id="theme" type="button" aria-label="Switch light or dark theme">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.500 4 8 8 0 1 0 20 14.500Z"/></svg>
+      </button>
+      <button class="btn btn--sm" id="surprise" type="button">Surprise me</button>
+    </nav>
+    <span aria-hidden="true"></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="view-gallery">
+    <div class="hero-panel">
+      <div class="ghost" aria-hidden="true">Sonarte</div>
+      <span class="tag tag--a" aria-hidden="true">Real artworks</span>
+      <span class="tag tag--b" aria-hidden="true">Scored live</span>
+      <div class="hero-copy">
+        <span class="pill pill--hero">A listening gallery</span>
+        <h1>Look slowly.<br>Listen while you read.</h1>
+        <p>Real artworks from different artists, each with a short essay and sound scored to its mood. Press play on any page and read along.</p>
+        <div class="cta">
+          <button class="btn btn-hero" id="cta-listen" type="button">Start listening</button>
+          <button class="btn btn-hero--ghost" id="cta-artists" type="button">Meet the artists</button>
+        </div>
+      </div>
+      <div class="cluster" id="cluster"></div>
+    </div>
+    <div class="toolbar" id="toolbar">
+      <input class="search glass" id="q" type="search" placeholder="Search title, artist, movement" aria-label="Search the gallery">
+      <div class="chips" id="chips" role="group" aria-label="Filter by mood"></div>
+      <button class="switch" id="sort" type="button" role="switch" aria-checked="false"><span class="switch__track" aria-hidden="true"></span>Newest first</button>
+      <div class="count" id="count" aria-live="polite"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div id="gallery-empty"></div>
+  </section>
+
+  <section id="view-piece" hidden></section>
+  <section id="view-artists" hidden></section>
+  <section id="view-edit" hidden></section>
+
+  <p class="foot">Plates show color notes for each piece, not reproductions. Dates and holdings are catalog entries; check them against the museum record before you publish.</p>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- sound moods (code-side; each artwork stores only a mood key) ---------- */
+  var MOODS = {
+    tide:   { label: "Tide",   blurb: "Open fifths that roll in and out.",        root: 50, scale: [0,2,4,6,7,9,11], bpm: 48,  wave: "sine",     lp: 1500, density: 0.5,  pad: [0,7,12] },
+    haze:   { label: "Haze",   blurb: "Soft pentatonic light, slow to resolve.",  root: 57, scale: [0,2,4,7,9],       bpm: 56,  wave: "triangle", lp: 1900, density: 0.4,  pad: [0,7,12] },
+    hush:   { label: "Hush",   blurb: "A near-still room with a few warm notes.", root: 52, scale: [0,2,4,7,9],       bpm: 44,  wave: "sine",     lp: 1100, density: 0.35, pad: [0,12] },
+    glow:   { label: "Glow",   blurb: "Bright lydian color above a steady pad.",  root: 55, scale: [0,2,4,6,7,9,11], bpm: 64,  wave: "triangle", lp: 2700, density: 0.6,  pad: [0,7,12,16] },
+    ember:  { label: "Ember",  blurb: "Warm minor, low and slow.",                root: 48, scale: [0,2,3,5,7,8,10], bpm: 50,  wave: "triangle", lp: 1300, density: 0.45, pad: [0,7,12] },
+    lament: { label: "Lament", blurb: "Dark, wide gaps between the notes.",       root: 45, scale: [0,2,3,5,7,8,11], bpm: 40,  wave: "sine",     lp: 900,  density: 0.3,  pad: [0,7,12] },
+    storm:  { label: "Storm",  blurb: "Tense phrygian color, faster and edged.",  root: 43, scale: [0,1,3,5,7,8,10], bpm: 84,  wave: "sawtooth", lp: 1000, density: 0.7,  pad: [0,6,12] },
+    grid:   { label: "Grid",   blurb: "Blues-scale ticks that skip along a beat.", root: 48, scale: [0,3,5,6,7,10],   bpm: 112, wave: "triangle", lp: 2300, density: 0.8,  pad: [0,7], swing: true }
+  };
+  var MOOD_KEYS = Object.keys(MOODS);
+
+  var Sound = (function () {
+    var ctx, master, send, analyser, timer = null, live = [], playing = false, step = 0, current = null, vol = 0.5;
+    function ensure() {
+      if (ctx) return;
+      var AC = window.AudioContext || window.webkitAudioContext;
+      ctx = new AC();
+      master = ctx.createGain(); master.gain.value = 0;
+      var comp = ctx.createDynamicsCompressor();
+      analyser = ctx.createAnalyser(); analyser.fftSize = 1024;
+      master.connect(comp); comp.connect(analyser); analyser.connect(ctx.destination);
+      var len = Math.floor(ctx.sampleRate * 2.8), buf = ctx.createBuffer(2, len, ctx.sampleRate);
+      for (var c = 0; c < 2; c++) { var d = buf.getChannelData(c); for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+      var conv = ctx.createConvolver(); conv.buffer = buf;
+      send = ctx.createGain(); send.gain.value = 0.45;
+      send.connect(conv); conv.connect(master);
+    }
+    function mtof(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+    function pad(m) {
+      var filter = ctx.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.value = m.lp * 0.55; filter.Q.value = 0.6;
+      var lfo = ctx.createOscillator(), lfoGain = ctx.createGain();
+      lfo.frequency.value = 0.07; lfoGain.gain.value = m.lp * 0.3;
+      lfo.connect(lfoGain); lfoGain.connect(filter.frequency); lfo.start();
+      var g = ctx.createGain(); g.gain.value = 0.0001; g.gain.linearRampToValueAtTime(0.07, ctx.currentTime + 2.5);
+      filter.connect(g); g.connect(master); g.connect(send);
+      live.push(lfo);
+      m.pad.forEach(function (iv, k) {
+        var o = ctx.createOscillator(); o.type = m.wave === "sawtooth" ? "sawtooth" : "sine";
+        o.frequency.value = mtof(m.root + iv); o.detune.value = (k % 2 ? 1 : -1) * 6;
+        o.connect(filter); o.start(); live.push(o);
+      });
+    }
+    function note(m) {
+      var s = m.scale[Math.floor(Math.random() * m.scale.length)];
+      var oct = 12 * (1 + Math.floor(Math.random() * 2));
+      var t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = m.wave === "sawtooth" ? "triangle" : m.wave; o.frequency.value = mtof(m.root + oct + s);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + (m.swing ? 0.5 : 2.2));
+      o.connect(g); g.connect(master); g.connect(send); o.start(t); o.stop(t + 2.4);
+    }
+    function start(key) {
+      var m = MOODS[key] || MOODS.haze;
+      ensure(); stop(true);
+      if (ctx.state === "suspended") ctx.resume();
+      current = key; playing = true; step = 0;
+      pad(m);
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setTargetAtTime(vol * 0.5, ctx.currentTime, 0.4);
+      var every = (60 / m.bpm) * (m.swing ? 500 : 1000);
+      timer = setInterval(function () {
+        step++;
+        var p = m.density * (m.swing ? (step % 2 ? 0.55 : 1) : 1);
+        if (Math.random() < p) note(m);
+      }, every);
+    }
+    function stop(quick) {
+      if (!ctx) { playing = false; return; }
+      clearInterval(timer); timer = null; playing = false; current = null;
+      var nodes = live; live = [];
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setTargetAtTime(0, ctx.currentTime, quick ? 0.03 : 0.25);
+      setTimeout(function () { nodes.forEach(function (n) { try { n.stop(); } catch (e) {} }); }, quick ? 120 : 1200);
+    }
+    function setVol(v) { vol = v; if (ctx && playing) master.gain.setTargetAtTime(vol * 0.5, ctx.currentTime, 0.1); }
+    return {
+      start: start, stop: stop, setVol: setVol,
+      get playing() { return playing; }, get current() { return current; },
+      get analyser() { return analyser; }
+    };
+  })();
+
+  /* ---------- helpers ---------- */
+  function h(tag, props) {
+    var el = document.createElement(tag), kids = Array.prototype.slice.call(arguments, 2);
+    if (props) Object.keys(props).forEach(function (k) {
+      var v = props[k];
+      if (v == null || v === false) return;
+      if (k === "class") el.className = v;
+      else if (k === "text") el.textContent = v;
+      else if (k === "style") Object.keys(v).forEach(function (a) { el.style.setProperty(a, v[a]); });
+      else if (k.indexOf("on") === 0) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? "" : v);
+    });
+    (function add(list) {
+      list.forEach(function (kid) {
+        if (kid == null || kid === false) return;
+        if (Array.isArray(kid)) return add(kid);
+        el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+      });
+    })(kids);
+    return el;
+  }
+  function $(s) { return document.querySelector(s); }
+  function hash(str) { var x = 0; for (var i = 0; i < str.length; i++) x = (x * 31 + str.charCodeAt(i)) >>> 0; return x; }
+  function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "item"; }
+  function yearNum(y) { var m = String(y || "").match(/\d{3,4}/); return m ? parseInt(m[0], 10) : 99999; }
+  function isHex(c) { return typeof c === "string" && /^#[0-9a-fA-F]{6}$/.test(c); }
+  function esc(s) { return s == null ? "" : String(s); }
+
+  /* ---------- state ---------- */
+  var S = { artworks: [], artists: [], view: "gallery", desc: false, pieceId: null, editId: null, mood: "all", q: "", canWrite: false, db: null, ready: false, error: "" };
+  var toastTimer;
+  function toast(msg) {
+    var t = $("#toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2600);
+  }
+  function artistOf(w) { return S.artists.filter(function (a) { return a.id === w.artistId; })[0]; }
+  function artistName(w) { var a = artistOf(w); return a ? a.name : "Unknown artist"; }
+
+  /* ---------- plates ---------- */
+  function plate(w, opts) {
+    var pal = (w.palette || []).filter(isHex);
+    if (!pal.length) pal = ["#9aa0b5", "#c9cde0", "#6f7590"];
+    var el = h("div", { class: "plate", role: "img", "aria-label": "Color notes for " + esc(w.title) });
+    pal.forEach(function (c, i) {
+      el.append(h("div", { class: "plate__band", style: { "--c": c, "--w": String(1 + (hash(w.id + i) % 30) / 10), "--i": String(i) } }));
+    });
+    return el;
+  }
+
+
+  function hexA(hex, a) {
+    var n = parseInt(hex.slice(1), 16);
+    return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
+  }
+  function glowOf(w) { var p = (w.palette || []).filter(isHex); return p[1] || p[0] || "#5B6CFF"; }
+  function setOrb(w) {
+    var r = document.documentElement.style;
+    if (!w) { r.removeProperty("--orb-a"); r.removeProperty("--orb-b"); return; }
+    var p = (w.palette || []).filter(isHex); if (p.length < 2) return;
+    r.setProperty("--orb-a", hexA(p[1], 0.7)); r.setProperty("--orb-b", hexA(p[3] || p[0], 0.5));
+  }
+  function surprise() {
+    if (!S.artworks.length) { toast("No pieces yet"); return; }
+    var w = S.artworks[Math.floor(Math.random() * S.artworks.length)];
+    S.pieceId = w.id; Sound.stop(); Sound.start(w.mood); show("piece");
+  }
+  function renderHero() {
+    var box = $("#cluster"); box.textContent = "";
+    if (!S.ready || !S.artworks.length) return;
+    var sorted = S.artworks.slice().sort(function (a, b) { return a.id < b.id ? -1 : 1; });
+    var pick = sorted[Math.floor(Date.now() / 864e5) % sorted.length];
+    var count = {}; S.artworks.forEach(function (w) { count[w.mood] = 1; });
+    var used = MOOD_KEYS.filter(function (k) { return count[k]; });
+    box.append(
+      h("div", { class: "mini mini--l glass" },
+        h("div", { class: "mini__k", text: "In the collection" }),
+        h("div", { class: "mini__big", text: String(S.artworks.length) }),
+        h("div", { class: "mini__sub", text: "pieces by " + S.artists.length + " artists, scored in " + used.length + " sound moods" })),
+      h("button", { class: "feature glass glass--lit", type: "button", onclick: function () { S.pieceId = pick.id; show("piece"); } },
+        plate(pick),
+        h("div", { class: "feature__body" },
+          h("span", { class: "pill pill--hero", text: "Today's piece" }),
+          h("div", { class: "feature__title", text: esc(pick.title) }),
+          h("div", { class: "feature__by", text: artistName(pick) + " · " + esc(pick.year) }),
+          h("div", { class: "feature__go" }, "Read and listen ", h("span", { "aria-hidden": "true", text: "→" })))),
+      h("div", { class: "mini mini--r glass" },
+        h("div", { class: "mini__k", text: "Jump to a mood" }),
+        h("div", { class: "chips" }, used.map(function (k) {
+          return h("button", { class: "chip", type: "button", text: MOODS[k].label, onclick: function () {
+            S.mood = k; renderGallery(); $("#toolbar").scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+          } });
+        })),
+        h("div", { class: "mini__sub", text: "Each mood sets the scale, tempo and tone of the sound." })));
+  }
+
+  /* ---------- views ---------- */
+  function show(view) {
+    if (S.view === "piece" && view !== "piece") Sound.stop();
+    if (view !== "piece") setOrb();
+    S.view = view;
+    ["gallery", "piece", "artists", "edit"].forEach(function (v) { $("#view-" + v).hidden = v !== view; });
+    var tabKey = view === "piece" ? "gallery" : view;
+    document.querySelectorAll(".tab").forEach(function (t) {
+      if (t.dataset.view === tabKey) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
+    });
+    window.scrollTo(0, 0);
+    if (view === "gallery") renderGallery();
+    if (view === "piece") renderPiece();
+    if (view === "artists") renderArtists();
+    if (view === "edit") renderEdit();
+  }
+
+  function filtered() {
+    var q = S.q.trim().toLowerCase();
+    return S.artworks.filter(function (w) {
+      if (S.mood !== "all" && w.mood !== S.mood) return false;
+      if (!q) return true;
+      return [w.title, artistName(w), w.movement, w.location, w.medium, w.year].join(" ").toLowerCase().indexOf(q) !== -1;
+    }).sort(function (a, b) { var d = (a.sortYear || yearNum(a.year)) - (b.sortYear || yearNum(b.year)); return S.desc ? -d : d; });
+  }
+
+  function renderGallery() {
+    renderHero();
+    var chips = $("#chips"); chips.textContent = "";
+    var used = {}; S.artworks.forEach(function (w) { used[w.mood] = true; });
+    var keys = ["all"].concat(MOOD_KEYS.filter(function (k) { return used[k]; }));
+    if (keys.length > 1) keys.forEach(function (k) {
+      chips.append(h("button", { class: "chip", type: "button", "aria-pressed": String(S.mood === k), text: k === "all" ? "All moods" : MOODS[k].label,
+        onclick: function () { S.mood = k; renderGallery(); } }));
+    });
+    var list = filtered(), grid = $("#grid"); grid.textContent = "";
+    list.forEach(function (w) {
+      var m = MOODS[w.mood];
+      grid.append(h("button", { class: "card glass", type: "button", style: { "--glow": glowOf(w) }, onclick: function () { S.pieceId = w.id; show("piece"); } },
+        plate(w),
+        h("div", { class: "card__body" },
+          h("div", { class: "card__title", text: esc(w.title) }),
+          h("div", { class: "card__by", text: artistName(w) }),
+          h("div", { class: "pills" }, h("span", { class: "pill", text: esc(w.year) }), m ? h("span", { class: "pill pill--mood", text: m.label }) : null)),
+        h("span", { class: "card__go", "aria-hidden": "true", text: "→" })));
+    });
+    $("#count").textContent = S.ready ? list.length + (list.length === 1 ? " piece" : " pieces") + " · " + S.artists.length + " artists" : "";
+    var empty = $("#gallery-empty"); empty.textContent = "";
+    if (!S.ready) return;
+    if (S.error) {
+      empty.append(h("div", { class: "empty glass" }, h("h2", { text: "The collection can't load here" }), h("p", { text: S.error })));
+    } else if (!S.artworks.length) {
+      empty.append(h("div", { class: "empty glass" }, h("h2", { text: "No pieces in the collection yet" }),
+        h("p", { text: S.canWrite ? "Use Add piece to enter the first artwork. Each one gets an essay, a palette and a mood for its sound." : "Check back soon. The curator hasn't added any artworks yet." })));
+    } else if (!list.length) {
+      empty.append(h("div", { class: "empty glass" }, h("h2", { text: "Nothing matches that search" }), h("p", { text: "Try a different word or clear the mood filter." })));
+    }
+  }
+
+  function renderPiece() {
+    var root = $("#view-piece"); root.textContent = "";
+    var w = S.artworks.filter(function (x) { return x.id === S.pieceId; })[0];
+    if (!w) { root.append(h("button", { class: "back", type: "button", text: "← Gallery", onclick: function () { show("gallery"); } }), h("p", { text: "That piece is no longer in the collection." })); return; }
+    var m = MOODS[w.mood] || MOODS.haze, a = artistOf(w);
+    setOrb(w);
+    var plateEl = plate(w);
+    plateEl.style.setProperty("--beat", (60 / m.bpm) + "s");
+    var plateWrap = h("div", { class: "piece__plate" }, plateEl, h("div", { class: "plate-note", text: "Color notes, not a reproduction" }));
+
+    var playBtn = h("button", { class: "btn btn--accent", type: "button", "aria-pressed": "false", id: "play" }, "Play sound");
+    var scope = h("canvas", { class: "scope", id: "scope", "aria-hidden": "true" });
+    var vol = h("input", { type: "range", id: "vol", min: "0", max: "1", step: "0.01", value: "0.5", "aria-label": "Volume",
+      oninput: function (e) { Sound.setVol(parseFloat(e.target.value)); } });
+    function sync() {
+      var on = Sound.playing && Sound.current === w.mood && S.view === "piece";
+      playBtn.textContent = on ? "Pause sound" : "Play sound";
+      playBtn.setAttribute("aria-pressed", String(on));
+      plateEl.classList.toggle("is-playing", on);
+      if (on) draw(scope, sync); else drawFlat(scope);
+    }
+    playBtn.addEventListener("click", function () {
+      if (Sound.playing) Sound.stop(); else Sound.start(w.mood);
+      sync();
+    });
+    var player = h("div", { class: "player" },
+      h("div", { class: "player__top" },
+        h("div", { class: "player__what" },
+          h("div", { class: "player__mood", text: m.label }),
+          h("div", { class: "player__spec", text: m.bpm + " bpm · " + m.scale.length + "-note scale · " + m.wave })),
+        playBtn),
+      h("div", { class: "hint", text: m.blurb }),
+      scope,
+      h("div", { class: "vol" }, "Vol", vol));
+
+    var cat = h("div", { class: "catalog" });
+    [["Artist", a ? a.name : "Unknown"], ["Date", w.year], ["Medium", w.medium], ["Where", w.location || "Holding to confirm"], ["Movement", w.movement]].forEach(function (r) {
+      if (!r[1]) return; cat.append(h("div", { class: "fact" }, h("span", { class: "fact__k", text: r[0] }), h("span", { class: "fact__v", text: esc(r[1]) })));
+    });
+
+    var essay = h("div", { class: "essay" });
+    String(w.essay || "").split(/\n\s*\n/).forEach(function (p) { if (p.trim()) essay.append(h("p", { text: p.trim() })); });
+    if (!essay.childNodes.length) essay.append(h("p", { class: "hint", text: "No essay yet." }));
+
+    var side = h("div", {},
+      h("div", { class: "eyebrow", text: "Now reading" }),
+      h("h1", { text: esc(w.title) }),
+      h("p", { class: "piece__by", text: a ? a.name : "Unknown artist" }),
+      cat, player, essay);
+    if (w.pairWork) {
+      var q = encodeURIComponent((w.pairWork + " " + (w.pairArtist || "")).trim());
+      side.append(h("div", { class: "pairs" },
+        h("div", { class: "pairs__label", text: "Also listen to" }),
+        h("div", { class: "pairs__work", text: esc(w.pairWork) }),
+        h("div", { text: esc(w.pairArtist) }),
+        h("a", { href: "https://open.spotify.com/search/" + q, target: "_blank", rel: "noopener noreferrer", text: "Find a recording" })));
+    }
+    var others = S.artworks.filter(function (x) { return x.artistId === w.artistId && x.id !== w.id; });
+    if (others.length) {
+      var more = h("div", { class: "more" }, "More by " + (a ? a.name : "this artist") + ":");
+      others.forEach(function (o) { more.append(h("button", { class: "chip", type: "button", text: o.title, onclick: function () { Sound.stop(); S.pieceId = o.id; renderPiece(); window.scrollTo(0, 0); } })); });
+      side.append(more);
+    }
+    if (S.canWrite) {
+      var del = h("button", { class: "btn btn--danger", type: "button", text: "Delete piece" });
+      del.addEventListener("click", function () {
+        if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Tap again to delete"; return; }
+        S.db.doc("artworks/" + w.id).delete().then(function () { toast("Piece deleted"); show("gallery"); }, function () { toast("Couldn't delete. Try again."); });
+      });
+      side.append(h("div", { class: "actions" },
+        h("button", { class: "btn btn--ghost", type: "button", text: "Edit piece", onclick: function () { S.editId = w.id; show("edit"); } }), del));
+    }
+    root.append(
+      h("button", { class: "back", type: "button", text: "← Gallery", onclick: function () { show("gallery"); } }),
+      h("div", { class: "piece" }, plateWrap, side));
+    sync();
+  }
+
+  /* scope drawing */
+  function colors() { var cs = getComputedStyle(document.documentElement); return { line: cs.getPropertyValue("--color-accent").trim() || "#2A36D6", mute: cs.getPropertyValue("--color-line").trim() || "#999" }; }
+  function fit(c) {
+    var dpr = window.devicePixelRatio || 1, w = c.clientWidth, hgt = c.clientHeight;
+    if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(hgt * dpr); }
+    var g = c.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, hgt);
+    return { g: g, w: w, h: hgt };
+  }
+  function drawFlat(c) {
+    if (!c.isConnected) return;
+    var f = fit(c), k = colors(); f.g.strokeStyle = k.mute; f.g.lineWidth = 1.5;
+    f.g.beginPath(); f.g.moveTo(0, f.h / 2); f.g.lineTo(f.w, f.h / 2); f.g.stroke();
+  }
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var rafId = 0;
+  function draw(c, onStop) {
+    cancelAnimationFrame(rafId);
+    if (reduce) { drawFlat(c); return; }
+    var an = Sound.analyser; if (!an) return;
+    var data = new Uint8Array(an.fftSize);
+    (function loop() {
+      if (!c.isConnected || !Sound.playing) { if (c.isConnected) drawFlat(c); return; }
+      var f = fit(c), k = colors(); an.getByteTimeDomainData(data);
+      f.g.strokeStyle = k.line; f.g.lineWidth = 1.8; f.g.beginPath();
+      for (var i = 0; i < data.length; i += 4) {
+        var x = (i / data.length) * f.w, y = (data[i] / 255) * f.h;
+        if (i === 0) f.g.moveTo(x, y); else f.g.lineTo(x, y);
+      }
+      f.g.stroke(); rafId = requestAnimationFrame(loop);
+    })();
+  }
+
+  function renderArtists() {
+    var root = $("#view-artists"); root.textContent = "";
+    root.append(h("div", { class: "page-head" }, h("div", { class: "eyebrow", text: "The people behind the plates" }), h("h1", { text: "Artists" })));
+    if (!S.artists.length) { root.append(h("div", { class: "empty glass" }, h("h2", { text: "No artists yet" }), h("p", { text: "Artists appear here as soon as you add a piece." }))); return; }
+    var wrap = h("div", { class: "artists" });
+    S.artists.slice().sort(function (a, b) { return (a.born || 0) - (b.born || 0); }).forEach(function (a) {
+      var works = S.artworks.filter(function (w) { return w.artistId === a.id; });
+      var list = h("div", { class: "artist__works" });
+      works.forEach(function (w) { list.append(h("button", { class: "chip", type: "button", text: w.title, onclick: function () { S.pieceId = w.id; show("piece"); } })); });
+      wrap.append(h("article", { class: "artist glass" },
+        h("h2", { text: esc(a.name) }),
+        h("div", { class: "artist__life", text: [(a.born || "?") + "–" + (a.died || ""), a.origin].filter(Boolean).join(" · ") }),
+        a.note ? h("p", { text: a.note }) : null, list));
+    });
+    root.append(wrap);
+  }
+
+  function renderEdit() {
+    var root = $("#view-edit"); root.textContent = "";
+    if (!S.canWrite) { root.append(h("div", { class: "empty glass" }, h("h2", { text: "Only the curator can edit" }), h("p", { text: "You can read and listen to every piece. Adding and editing is limited to the people who manage this gallery." }))); return; }
+    var w = S.editId ? S.artworks.filter(function (x) { return x.id === S.editId; })[0] : null;
+    var d = w || { palette: ["#1c2a6b", "#d83a2e", "#f2c230", "#2f8f5b", "#f0ebe0"], mood: "haze" };
+
+    var artistSel = h("select", { id: "f-artist" });
+    S.artists.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (a) { artistSel.append(h("option", { value: a.id, text: a.name })); });
+    artistSel.append(h("option", { value: "__new", text: "New artist…" }));
+    artistSel.value = d.artistId && S.artists.some(function (a) { return a.id === d.artistId; }) ? d.artistId : (S.artists.length ? artistSel.options[0].value : "__new");
+    var newWrap = h("div", { class: "row", id: "new-artist" },
+      h("div", { class: "field" }, h("label", { for: "f-aname", text: "Artist name" }), h("input", { type: "text", id: "f-aname" })),
+      h("div", { class: "field" }, h("label", { for: "f-aorigin", text: "Born in" }), h("input", { type: "text", id: "f-aorigin", placeholder: "City, Country" })),
+      h("div", { class: "field" }, h("label", { for: "f-aborn", text: "Born (year)" }), h("input", { type: "text", id: "f-aborn", inputmode: "numeric" })),
+      h("div", { class: "field" }, h("label", { for: "f-adied", text: "Died (year, optional)" }), h("input", { type: "text", id: "f-adied", inputmode: "numeric" })));
+    function toggleNew() { newWrap.hidden = artistSel.value !== "__new"; }
+    artistSel.addEventListener("change", toggleNew); toggleNew();
+
+    var moodSel = h("select", { id: "f-mood" });
+    MOOD_KEYS.forEach(function (k) { moodSel.append(h("option", { value: k, text: MOODS[k].label + " — " + MOODS[k].blurb })); });
+    moodSel.value = d.mood || "haze";
+
+    var sw = h("fieldset", { class: "swatches" }, h("legend", { class: "sr", style: { position: "absolute", left: "-9999px" }, text: "Palette" }));
+    for (var i = 0; i < 5; i++) sw.append(h("input", { type: "color", id: "f-c" + i, "aria-label": "Palette color " + (i + 1), value: isHex((d.palette || [])[i]) ? d.palette[i] : "#888888" }));
+
+    function f(id, label, val, ph) { return h("div", { class: "field" }, h("label", { for: id, text: label }), h("input", { type: "text", id: id, value: val || "", placeholder: ph || "" })); }
+    var essay = h("textarea", { id: "f-essay", placeholder: "Two or three short paragraphs. Separate paragraphs with a blank line." }); essay.value = d.essay || "";
+    var msg = h("p", { class: "hint", id: "f-msg", "aria-live": "polite" });
+    var save = h("button", { class: "btn", type: "submit", text: w ? "Save changes" : "Add to collection" });
+
+    var form = h("form", { class: "form", novalidate: "" },
+      h("button", { class: "back", type: "button", text: "← Cancel", onclick: function () { show(w ? "piece" : "gallery"); } }),
+      h("h1", { text: w ? "Edit piece" : "Add a piece" }),
+      f("f-title", "Title", d.title),
+      h("div", { class: "field" }, h("label", { for: "f-artist", text: "Artist" }), artistSel),
+      newWrap,
+      h("div", { class: "row" }, f("f-year", "Date", d.year, "c. 1831"), f("f-medium", "Medium", d.medium, "Oil on canvas")),
+      h("div", { class: "row" }, f("f-location", "Where it is held", d.location, "Museum, City"), f("f-movement", "Movement", d.movement)),
+      h("div", { class: "field" }, h("label", { for: "f-mood", text: "Sound mood" }), moodSel),
+      h("div", { class: "field" }, h("label", { for: "f-c0", text: "Palette notes" }), sw, h("small", { text: "Five dominant colors you see in the piece." })),
+      h("div", { class: "field" }, h("label", { for: "f-essay", text: "Essay" }), essay),
+      h("div", { class: "row" }, f("f-pwork", "Also listen to (work)", d.pairWork), f("f-partist", "Composer or performer", d.pairArtist)),
+      msg, h("div", { class: "actions" }, save));
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var v = function (id) { return $("#" + id).value.trim(); };
+      if (!v("f-title")) { msg.textContent = "Add a title first."; $("#f-title").focus(); return; }
+      var aid = artistSel.value, chain = Promise.resolve();
+      if (aid === "__new") {
+        if (!v("f-aname")) { msg.textContent = "Add the artist's name."; $("#f-aname").focus(); return; }
+        aid = slug(v("f-aname"));
+        var bn = parseInt(v("f-aborn"), 10), dn = parseInt(v("f-adied"), 10);
+        var ad = { name: v("f-aname"), origin: v("f-aorigin") };
+        if (bn) ad.born = bn; if (dn) ad.died = dn;
+        chain = S.db.doc("artists/" + aid).set(ad);
+      }
+      var data = {
+        title: v("f-title"), artistId: aid, year: v("f-year"), sortYear: yearNum(v("f-year")), medium: v("f-medium"),
+        location: v("f-location"), movement: v("f-movement"), mood: moodSel.value,
+        palette: [0, 1, 2, 3, 4].map(function (i) { return $("#f-c" + i).value; }),
+        essay: essay.value.trim(), pairWork: v("f-pwork"), pairArtist: v("f-partist")
+      };
+      var id = w ? w.id : slug(data.title) + "-" + Math.random().toString(36).slice(2, 6);
+      save.disabled = true; msg.textContent = "Saving…";
+      chain.then(function () { return S.db.doc("artworks/" + id).set(data); }).then(function () {
+        toast("Saved"); S.pieceId = id; S.editId = null; show("piece");
+      }, function (err) {
+        save.disabled = false;
+        msg.textContent = err && err.code === "quota_exceeded" ? "The database is full. Delete something first." : "Couldn't save. Check your connection and try again.";
+      });
+    });
+    root.append(form);
+  }
+
+  /* ---------- wiring ---------- */
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () { if (t.dataset.view === "edit") S.editId = null; show(t.dataset.view); });
+  });
+  $("#q").addEventListener("input", function (e) { S.q = e.target.value; renderGallery(); });
+  $("#sort").addEventListener("click", function (e) { S.desc = !S.desc; e.currentTarget.setAttribute("aria-checked", String(S.desc)); renderGallery(); });
+  $("#surprise").addEventListener("click", surprise);
+  $("#cta-listen").addEventListener("click", surprise);
+  $("#cta-artists").addEventListener("click", function () { show("artists"); });
+  $("#theme").addEventListener("click", function () {
+    var root = document.documentElement, cur = root.getAttribute("data-theme");
+    var dark = cur ? cur === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var next = dark ? "light" : "dark"; root.setAttribute("data-theme", next);
+    try { localStorage.setItem("sonarte-theme", next); } catch (e) {}
+    if (S.view === "piece") renderPiece();
+  });
+  try { var saved = localStorage.getItem("sonarte-theme"); if (saved) document.documentElement.setAttribute("data-theme", saved); } catch (e) {}
+  document.addEventListener("visibilitychange", function () { if (document.hidden && Sound.playing) { Sound.stop(); if (S.view === "piece") renderPiece(); } });
+
+  function refresh() {
+    if (S.view === "edit") return; // never rebuild a form while someone is typing in it
+    if (S.view === "gallery") renderGallery();
+    else if (S.view === "artists") renderArtists();
+    else if (S.view === "piece" && !Sound.playing) renderPiece();
+  }
+
+  renderGallery();
+  (async function boot() {
+    var db = null, user = null;
+    try { db = await claude.use("db"); user = await claude.use("user"); } catch (e) {}
+    if (!db) {
+      S.ready = true; S.error = "Sign in to claude.ai to open this collection.";
+      renderGallery(); return;
+    }
+    S.db = db;
+    S.canWrite = !!(user && user.canEdit && user.canEdit());
+    if (S.canWrite) $("#tab-add").hidden = false;
+    function mapDocs(snap) { return snap.docs.map(function (d) { var o = Object.assign({}, d.data()); o.id = d.id; return o; }); }
+    var gotA = false, gotW = false;
+    function ready() { if (gotA && gotW) { S.ready = true; refresh(); } }
+    db.collection("artists").onSnapshot(function (s) { S.artists = mapDocs(s); gotA = true; ready(); if (S.ready) refresh(); },
+      function () { S.ready = true; S.error = "The artist list couldn't load. Reload the page to try again."; refresh(); });
+    db.collection("artworks").onSnapshot(function (s) { S.artworks = mapDocs(s); gotW = true; ready(); if (S.ready) refresh(); },
+      function () { S.ready = true; S.error = "The artworks couldn't load. Reload the page to try again."; refresh(); });
+  })();
+})();
+</script>
+
+</body></html>
